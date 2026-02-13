@@ -1,103 +1,89 @@
-import type { PluggableList, Plugin } from "unified";
-import type { Root as MdastRoot } from "mdast";
-import type { Root as HastRoot, Element } from "hast";
+import type { Root as HTMLRoot } from "hast";
+import { toString } from "hast-util-to-string";
+import type { QuartzTransformerPlugin } from "@quartz-community/types";
+import { escapeHTML } from "@quartz-community/utils";
 import type { VFile } from "vfile";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import { findAndReplace } from "mdast-util-find-and-replace";
-import { visit } from "unist-util-visit";
-import type { QuartzTransformerPlugin, BuildCtx } from "@quartz-community/types";
-import type { ExampleTransformerOptions } from "./types";
 
-const defaultOptions: ExampleTransformerOptions = {
-  highlightToken: "==",
-  headingClass: "example-plugin-heading",
-  enableGfm: true,
-  addHeadingSlugs: true,
+export interface DescriptionOptions {
+  descriptionLength: number;
+  maxDescriptionLength: number;
+  replaceExternalLinks: boolean;
+}
+
+const defaultOptions: DescriptionOptions = {
+  descriptionLength: 150,
+  maxDescriptionLength: 300,
+  replaceExternalLinks: true,
 };
 
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const urlRegex = new RegExp(
+  /(https?:\/\/)?(?<domain>([\da-z\.-]+)\.([a-z\.]{2,6})(:\d+)?)(?<path>[\/\w\.-]*)(\?[\/\w\.=&;-]*)?/,
+  "g",
+);
 
-const remarkHighlightToken = (token: string): Plugin<[], MdastRoot> => {
-  const escapedToken = escapeRegExp(token);
-  const pattern = new RegExp(`${escapedToken}([^\n]+?)${escapedToken}`, "g");
-  return () => (tree: MdastRoot, _file: VFile) => {
-    findAndReplace(tree, [
-      [
-        pattern,
-        (_match: string, value: string) => ({
-          type: "strong",
-          children: [{ type: "text", value }],
-        }),
-      ],
-    ]);
-  };
-};
-
-const rehypeHeadingClass = (className: string): Plugin<[], HastRoot> => {
-  return () => (tree: HastRoot, _file: VFile) => {
-    visit(tree, "element", (node: Element) => {
-      if (!/^h[1-6]$/.test(node.tagName)) {
-        return;
-      }
-
-      const existing = node.properties?.className;
-      const classes: string[] = Array.isArray(existing)
-        ? existing.filter((value): value is string => typeof value === "string")
-        : typeof existing === "string"
-          ? [existing]
-          : [];
-      node.properties = {
-        ...node.properties,
-        className: [...classes, className],
-      };
-    });
-  };
-};
-
-/**
- * Example transformer showing remark/rehype usage and resource injection.
- */
-export const ExampleTransformer: QuartzTransformerPlugin<Partial<ExampleTransformerOptions>> = (
-  userOptions?: Partial<ExampleTransformerOptions>,
-) => {
-  const options = { ...defaultOptions, ...userOptions };
+export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> = (userOpts) => {
+  const opts = { ...defaultOptions, ...userOpts };
   return {
-    name: "ExampleTransformer",
-    textTransform(_ctx: BuildCtx, src: string) {
-      return src.endsWith("\n") ? src : `${src}\n`;
-    },
-    markdownPlugins(): PluggableList {
-      const plugins: PluggableList = [remarkHighlightToken(options.highlightToken)];
-      if (options.enableGfm) {
-        plugins.unshift(remarkGfm);
-      }
-      return plugins;
-    },
-    htmlPlugins(): PluggableList {
-      const plugins: PluggableList = [rehypeHeadingClass(options.headingClass)];
-      if (options.addHeadingSlugs) {
-        plugins.unshift(rehypeSlug);
-      }
-      return plugins;
-    },
-    externalResources() {
-      return {
-        css: [
-          {
-            content: `.${options.headingClass} { letter-spacing: 0.02em; }`,
-            inline: true,
-          },
-        ],
-        js: [
-          {
-            contentType: "inline",
-            loadTime: "afterDOMReady",
-            script: "document.documentElement.dataset.exampleTransformer = 'true'",
-          },
-        ],
-        additionalHead: [],
-      };
+    name: "Description",
+    htmlPlugins() {
+      return [
+        () => {
+          return async (tree: HTMLRoot, file: VFile) => {
+            let frontMatterDescription = file.data.frontmatter?.description;
+            let text = escapeHTML(toString(tree));
+
+            if (opts.replaceExternalLinks) {
+              frontMatterDescription = frontMatterDescription?.replace(
+                urlRegex,
+                "$<domain>" + "$<path>",
+              );
+              text = text.replace(urlRegex, "$<domain>" + "$<path>");
+            }
+
+            if (frontMatterDescription) {
+              file.data.description = frontMatterDescription;
+              file.data.text = text;
+              return;
+            }
+
+            const desc = text;
+            const sentences = desc.replace(/\s+/g, " ").split(/\.\s/);
+            let finalDesc = "";
+            let sentenceIdx = 0;
+
+            while (sentenceIdx < sentences.length) {
+              const sentence = sentences[sentenceIdx];
+              if (!sentence) break;
+
+              const currentSentence = sentence.endsWith(".") ? sentence : sentence + ".";
+              const nextLength = finalDesc.length + currentSentence.length + (finalDesc ? 1 : 0);
+
+              if (nextLength <= opts.descriptionLength || sentenceIdx === 0) {
+                finalDesc += (finalDesc ? " " : "") + currentSentence;
+                sentenceIdx++;
+              } else {
+                break;
+              }
+            }
+
+            file.data.description =
+              finalDesc.length > opts.maxDescriptionLength
+                ? finalDesc.slice(0, opts.maxDescriptionLength) + "..."
+                : finalDesc;
+            file.data.text = text;
+          };
+        },
+      ];
     },
   };
 };
+
+declare module "vfile" {
+  interface DataMap {
+    frontmatter?: {
+      description?: string;
+    };
+    description: string;
+    text: string;
+  }
+}
