@@ -77,5 +77,16 @@
   "engines": {
     "node": ">=22",
     "npm": ">=10.9.2"
+  },
+  "quartz": {
+    "name": "description",
+    "displayName": "Description",
+    "category": "transformer",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 70,
+    "defaultEnabled": true,
+    "defaultOptions": {}
   }
 }
