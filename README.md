@@ -10,30 +10,33 @@ npx quartz plugin add github:quartz-community/description
 
 ## Usage
 
-```ts
-// quartz.config.ts
-import * as ExternalPlugin from "./.quartz/plugins"
+```yaml title="quartz.config.yaml"
+plugins:
+  - source: github:quartz-community/description
+    enabled: true
+```
 
-const config: QuartzConfig = {
-  plugins: {
-    transformers: [
-      ExternalPlugin.Description(),
-    ],
-  },
-}
+For advanced use cases, you can override in TypeScript:
+
+```ts title="quartz.ts (override)"
+import * as ExternalPlugin from "./.quartz/plugins";
+
+ExternalPlugin.Description({
+  descriptionLength: 150,
+});
 ```
 
 ## Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| descriptionLength | `number` | `150` | The length of the description to generate. |
-| maxDescriptionLength | `number` | `300` | The maximum length of the description. |
-| replaceExternalLinks | `boolean` | `true` | Whether to replace external links in the description. |
+| Option                 | Type      | Default | Description                                           |
+| ---------------------- | --------- | ------- | ----------------------------------------------------- |
+| `descriptionLength`    | `number`  | `150`   | The length of the description to generate.            |
+| `maxDescriptionLength` | `number`  | `300`   | The maximum length of the description.                |
+| `replaceExternalLinks` | `boolean` | `true`  | Whether to replace external links in the description. |
 
 ## Documentation
 
-See the [Quartz documentation](https://quartz.jzhao.xyz/) for more information.
+See the [Quartz documentation](https://quartz.jzhao.xyz/plugins/Description) for more information.
 
 ## License
 
