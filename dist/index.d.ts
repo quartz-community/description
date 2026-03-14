@@ -9,10 +9,6 @@ interface DescriptionOptions {
 declare const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>>;
 declare module "vfile" {
     interface DataMap {
-        frontmatter?: {
-            description?: string;
-            [key: string]: unknown;
-        };
         description: string;
         text: string;
     }

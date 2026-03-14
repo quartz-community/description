@@ -29,7 +29,7 @@ export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> =
       return [
         () => {
           return async (tree: HTMLRoot, file: VFile) => {
-            let frontMatterDescription = file.data.frontmatter?.description;
+            let frontMatterDescription = (file.data.frontmatter as Record<string, unknown> | undefined)?.description as string | undefined;
             let text = escapeHTML(toString(tree));
 
             if (opts.replaceExternalLinks) {
@@ -80,10 +80,6 @@ export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> =
 
 declare module "vfile" {
   interface DataMap {
-    frontmatter?: {
-      description?: string;
-      [key: string]: unknown;
-    };
     description: string;
     text: string;
   }
