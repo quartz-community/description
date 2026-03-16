@@ -29,7 +29,9 @@ export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> =
       return [
         () => {
           return async (tree: HTMLRoot, file: VFile) => {
-            let frontMatterDescription = (file.data.frontmatter as Record<string, unknown> | undefined)?.description as string | undefined;
+            let frontMatterDescription = (
+              file.data.frontmatter as Record<string, unknown> | undefined
+            )?.description as string | undefined;
             let text = escapeHTML(toString(tree));
 
             if (opts.replaceExternalLinks) {
