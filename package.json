@@ -44,7 +44,6 @@
   },
   "peerDependencies": {
     "@jackyzha0/quartz": "^4.5.2",
-    "hast-util-to-string": "^3.0.1",
     "preact": "^10.0.0"
   },
   "peerDependenciesMeta": {
@@ -53,9 +52,6 @@
     },
     "preact": {
       "optional": false
-    },
-    "hast-util-to-string": {
-      "optional": true
     }
   },
   "dependencies": {

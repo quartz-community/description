@@ -1,7 +1,26 @@
-import { toString } from 'hast-util-to-string';
 import { escapeHTML } from '@quartz-community/utils';
 
-// src/transformer.ts
+// node_modules/hast-util-to-string/lib/index.js
+function toString(node) {
+  if ("children" in node) {
+    return all(node);
+  }
+  return "value" in node ? node.value : "";
+}
+function one(node) {
+  if (node.type === "text") {
+    return node.value;
+  }
+  return "children" in node ? all(node) : "";
+}
+function all(node) {
+  let index = -1;
+  const result = [];
+  while (++index < node.children.length) {
+    result[index] = one(node.children[index]);
+  }
+  return result.join("");
+}
 var defaultOptions = {
   descriptionLength: 150,
   maxDescriptionLength: 300,
