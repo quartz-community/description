@@ -79,10 +79,3 @@ export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> =
     },
   };
 };
-
-declare module "vfile" {
-  interface DataMap {
-    description: string;
-    text: string;
-  }
-}

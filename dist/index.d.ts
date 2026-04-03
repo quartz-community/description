@@ -7,11 +7,5 @@ interface DescriptionOptions {
     replaceExternalLinks: boolean;
 }
 declare const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>>;
-declare module "vfile" {
-    interface DataMap {
-        description: string;
-        text: string;
-    }
-}
 
 export { Description, type DescriptionOptions };
