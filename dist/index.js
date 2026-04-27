@@ -1,5 +1,3 @@
-import { escapeHTML } from '@quartz-community/utils';
-
 // node_modules/hast-util-to-string/lib/index.js
 function toString(node) {
   if ("children" in node) {
@@ -21,6 +19,14 @@ function all(node) {
   }
   return result.join("");
 }
+"function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, Math.random().toString(8);
+
+// node_modules/@quartz-community/utils/dist/index.js
+function escapeHTML(unsafe) {
+  return unsafe.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+
+// src/transformer.ts
 var defaultOptions = {
   descriptionLength: 150,
   maxDescriptionLength: 300,
