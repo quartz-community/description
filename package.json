@@ -89,6 +89,21 @@
     "dependencies": [],
     "defaultOrder": 70,
     "defaultEnabled": true,
-    "defaultOptions": {}
+    "defaultOptions": {
+      "descriptionLength": 150,
+      "maxDescriptionLength": 300,
+      "replaceExternalLinks": true
+    },
+    "optionSchema": {
+      "descriptionLength": {
+        "type": "number"
+      },
+      "maxDescriptionLength": {
+        "type": "number"
+      },
+      "replaceExternalLinks": {
+        "type": "boolean"
+      }
+    }
   }
 }
