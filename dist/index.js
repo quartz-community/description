@@ -1,4 +1,4 @@
-// node_modules/hast-util-to-string/lib/index.js
+// ../../node_modules/.pnpm/hast-util-to-string@3.0.1/node_modules/hast-util-to-string/lib/index.js
 function toString(node) {
   if ("children" in node) {
     return all(node);
@@ -21,7 +21,7 @@ function all(node) {
 }
 "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, Math.random().toString(8);
 
-// node_modules/@quartz-community/utils/dist/index.js
+// ../utils/dist/index.js
 function escapeHTML(unsafe) {
   return unsafe.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
