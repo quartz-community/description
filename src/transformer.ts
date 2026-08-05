@@ -1,5 +1,4 @@
-import type { Root as HTMLRoot } from "hast";
-import { toString } from "hast-util-to-string";
+import type { Nodes, Root as HTMLRoot } from "hast";
 import type { QuartzTransformerPlugin } from "@quartz-community/types";
 import { escapeHTML } from "@quartz-community/utils";
 import type { VFile } from "vfile";
@@ -21,6 +20,17 @@ const urlRegex = new RegExp(
   "g",
 );
 
+// Like hast-util-to-string's toString, but joins siblings with a space so that
+// text in adjacent block elements (e.g. table cells) does not get mashed into a
+// single token. The search index tokenizes on whitespace, so without this, words
+// from neighbouring cells become unsearchable.
+const toPlainText = (node: Nodes): string =>
+  node.type === "text"
+    ? node.value
+    : "children" in node
+      ? node.children.map(toPlainText).join(" ")
+      : "";
+
 export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> = (userOpts) => {
   const opts = { ...defaultOptions, ...userOpts };
   return {
@@ -32,7 +42,7 @@ export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> =
             let frontMatterDescription = (
               file.data.frontmatter as Record<string, unknown> | undefined
             )?.description as string | undefined;
-            let text = escapeHTML(toString(tree));
+            let text = escapeHTML(toPlainText(tree));
 
             if (opts.replaceExternalLinks) {
               frontMatterDescription = frontMatterDescription?.replace(
