@@ -103,6 +103,23 @@
       "replaceExternalLinks": {
         "type": "boolean"
       }
+    },
+    "capabilities": {
+      "provides": {
+        "data": [
+          "description",
+          "text"
+        ]
+      },
+      "optional": {
+        "data": [
+          {
+            "name": "frontmatter",
+            "from": "note-properties",
+            "reason": "frontmatter description/socialDescription is ignored"
+          }
+        ]
+      }
     }
   },
   "publishConfig": {
