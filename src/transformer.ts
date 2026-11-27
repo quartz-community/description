@@ -21,6 +21,28 @@ const urlRegex = new RegExp(
   "g",
 );
 
+/**
+ * The frontmatter description as text. YAML reads `description: 2024` as a number and
+ * `description: [a, b]` as a list; those become "2024" and "a, b". Anything else (an object, an
+ * empty value) counts as no description, and the page text is used instead.
+ */
+function frontmatterDescriptionText(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+    return String(value);
+  }
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  if (Array.isArray(value)) {
+    const items = value
+      .map(frontmatterDescriptionText)
+      .filter((item): item is string => item !== undefined && item !== "");
+    return items.length > 0 ? items.join(", ") : undefined;
+  }
+  return undefined;
+}
+
 export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> = (userOpts) => {
   const opts = { ...defaultOptions, ...userOpts };
   return {
@@ -29,9 +51,9 @@ export const Description: QuartzTransformerPlugin<Partial<DescriptionOptions>> =
       return [
         () => {
           return async (tree: HTMLRoot, file: VFile) => {
-            let frontMatterDescription = (
-              file.data.frontmatter as Record<string, unknown> | undefined
-            )?.description as string | undefined;
+            let frontMatterDescription = frontmatterDescriptionText(
+              (file.data.frontmatter as Record<string, unknown> | undefined)?.description,
+            );
             let text = escapeHTML(toString(tree));
 
             if (opts.replaceExternalLinks) {
