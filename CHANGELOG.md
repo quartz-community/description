@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+### Patch Changes
+
+- 1e3dde8: A frontmatter `description` that YAML reads as a number, date or list (`description: 2024`, `description: [a, b]`) is now used as text ("2024", "a, b") instead of failing the page.
+
 ## 1.0.2
 
 ### Patch Changes
