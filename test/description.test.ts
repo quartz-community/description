@@ -96,10 +96,26 @@ describe("Description", () => {
     expect((await describePage(tree())).description).toBe("");
   });
 
-  // bug: a frontmatter description that YAML parses as a non-string (`description: 2024`,
-  // `description: [a, b]`) is passed to String.prototype.replace and throws, failing the page.
-  it.fails("doesn't fail on a numeric frontmatter description", async () => {
+  // A frontmatter description that YAML parses as a non-string (`description: 2024`,
+  // `description: [a, b]`) used to be passed to String.prototype.replace and throw.
+  it("uses a numeric frontmatter description as text", async () => {
     const data = await describePage(tree("Body."), { description: 2024 });
     expect(data.description).toBe("2024");
+  });
+
+  it("joins a list frontmatter description, and ignores an empty or object one", async () => {
+    expect((await describePage(tree("Body."), { description: ["a", 2, null] })).description).toBe(
+      "a, 2",
+    );
+    expect((await describePage(tree("Body."), { description: [] })).description).toBe("Body.");
+    expect((await describePage(tree("Body."), { description: null })).description).toBe("Body.");
+    expect((await describePage(tree("Body."), { description: { a: 1 } })).description).toBe(
+      "Body.",
+    );
+  });
+
+  it("shows a YAML date description as its date", async () => {
+    const data = await describePage(tree("Body."), { description: new Date("2024-03-05") });
+    expect(data.description).toBe("2024-03-05");
   });
 });
